@@ -1,7 +1,7 @@
 import os
 import json
 import uvicorn
-import google.generativeai as genai
+from google import genai
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from dotenv import load_dotenv
@@ -34,14 +34,8 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY environment variable not set.")
 
-genai.configure(api_key=GOOGLE_API_KEY)
-
-# Configure the Gemini model. We pass the system prompt during initialization.
-# gemini-2.5-flash-latest is a fast and capable model suitable for this use case.
-model = genai.GenerativeModel(
-    model_name='gemini-2.5-flash',
-    system_instruction=SYSTEM_PROMPT
-)
+# Initialize the Gemini client with the new SDK
+client = genai.Client(api_key=GOOGLE_API_KEY)
 
 # Store active chat sessions
 # We will now store Gemini's chat session objects
@@ -50,9 +44,9 @@ sessions = {}
 # Create FastAPI app
 app = FastAPI()
 
-async def gemini_response(chat_session, user_prompt):
-    """Get a response from the Gemini API and stream it."""
-    response = await chat_session.send_message_async(user_prompt)
+def gemini_response(chat_session, user_prompt):
+    """Get a response from the Gemini API."""
+    response = chat_session.send_message(user_prompt)
     return response.text
 
 @app.post("/twiml")
@@ -83,8 +77,11 @@ async def websocket_endpoint(websocket: WebSocket):
             if message["type"] == "setup":
                 call_sid = message["callSid"]
                 print(f"Setup for call: {call_sid}")
-                # Start a new chat session for this call
-                sessions[call_sid] = model.start_chat(history=[])
+                # Start a new chat session for this call using the new SDK
+                sessions[call_sid] = client.chats.create(
+                    model="gemini-2.5-flash",
+                    config={"system_instruction": SYSTEM_PROMPT}
+                )
                 
             elif message["type"] == "prompt":
                 if not call_sid or call_sid not in sessions:
@@ -95,7 +92,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 print(f"Processing prompt: {user_prompt}")
                 
                 chat_session = sessions[call_sid]
-                response_text = await gemini_response(chat_session, user_prompt)
+                response_text = gemini_response(chat_session, user_prompt)
                 
                 # The chat_session object automatically maintains history.
                 
