@@ -17,7 +17,7 @@ if not DOMAIN:
 WS_URL = f"wss://{DOMAIN}/ws"
 
 # Updated greeting to reflect the new model
-WELCOME_GREETING = "Hi! I am a voice assistant powered by Twilio and Google Gemini. Ask me anything!"
+WELCOME_GREETING = "Hi! Hellomeds here!"
 
 # System prompt for Gemini
 # Gemini works well with a direct instruction like this.
