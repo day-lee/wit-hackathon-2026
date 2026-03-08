@@ -6,6 +6,7 @@ const MedicationForm = ({
   setMedicines,
   reminder,
   setReminder,
+  onNext,
 }) => {
   const addMedicine = () => {
     if (
@@ -79,17 +80,13 @@ const MedicationForm = ({
           <span style={{ color: "#34a853" }}>SMS Confirmation</span>
         </div>
       </div>
+      <input type="checkbox" id="consent" name="consent" value="consent" style={{ marginTop: "20px" }} />
+      <label htmlFor="consent"> I am hereby consent to the terms and conditions </label>
 
       <button
         className="btn-primary"
         style={{ backgroundColor: "#34a853", marginTop: "20px" }}
-        onClick={() =>
-          alert(
-            `Logic Ready: ${
-              medicines.filter((m) => m !== "").length
-            } meds scheduled.`
-          )
-        }
+        onClick={onNext}
       >
         Save & Activate
       </button>
