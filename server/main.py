@@ -13,9 +13,9 @@ load_dotenv()
 
 # --- Configuration ---
 PORT = int(os.getenv("PORT", "8080"))
-DOMAIN = os.getenv("NGROK_URL")
+DOMAIN = os.getenv("PORT_URL")
 if not DOMAIN:
-    raise ValueError("NGROK_URL environment variable not set.")
+    raise ValueError("PORT_URL environment variable not set.")
 WS_URL = f"wss://{DOMAIN}/ws"
 
 WELCOME_GREETING = "Hi, HelloMeds calling!"
@@ -119,7 +119,7 @@ async def twiml_endpoint(request: Request):
 @app.post("/call")
 async def make_call(request: CallRequest):
     try:
-        # 환자 정보 저장
+        # save patient info for later use in WebSocket session
         pending_calls[request.to_number] = {
             "patient_name": request.patient_name,
             "medication": request.medication,
@@ -218,7 +218,7 @@ Start the conversation by greeting {patient_name} and reminding them to take {do
                     )
                     print(f"✅ Gemini session complete - {patient_name}: {medication} reminder")
 
-                    # pending_calls 정리
+                    # pending_calls
                     if to_number in pending_calls:
                         del pending_calls[to_number]
 
@@ -235,22 +235,22 @@ Start the conversation by greeting {patient_name} and reminding them to take {do
 
                 response_text = gemini_response(sessions[call_sid], user_prompt)
                 payload = json.dumps({"type": "text", "token": response_text, "last": True})
-                print(f"📤 Twilio로 전송: {payload}")
+                print(f"📤 Twilio send: {payload}")
                 await websocket.send_text(payload)
 
             elif message["type"] == "interrupt":
-                print(f"⚡ 인터럽트 발생 - call_sid: {call_sid}")
+                print(f"⚡ Interrupt received - call_sid: {call_sid}")
 
             else:
-                print(f"❓ 알 수 없는 메시지 타입: {message['type']}")
+                print(f"❓ unknown message type: {message['type']}")
 
     except WebSocketDisconnect:
-        print(f"🔌 WebSocket 종료 - call_sid: {call_sid}")
+        print(f"🔌 WebSocket end - call_sid: {call_sid}")
         if call_sid and call_sid in sessions:
             sessions.pop(call_sid)
 
     except Exception as e:
-        print(f"❌ 예상치 못한 에러: {e}")
+        print(f"❌ unexpected error: {e}")
         import traceback
         traceback.print_exc()
 

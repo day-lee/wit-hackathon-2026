@@ -35,7 +35,7 @@ GOOGLE_API_KEY="your_google_api_key"
 TWILIO_ACCOUNT_SID="your_twilio_account_sid"
 TWILIO_AUTH_TOKEN="your_twilio_auth_token"
 TWILIO_PHONE_NUMBER="your_twilio_phone_number"
-NGROK_URL="your_forwarded_address"
+PORT_URL="your_forwarded_address"
 PORT=8080
 ```
 
@@ -53,7 +53,7 @@ python main.py
 4. Copy the forwarded address
 5. Update `.env` file — without `https://`
 ```env
-NGROK_URL="your-forwarded-address.uks1.devtunnels.ms"
+PORT_URL="your-forwarded-address.uks1.devtunnels.ms"
 ```
 6. Restart server
 ```bash
